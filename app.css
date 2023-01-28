@@ -1,0 +1,52 @@
+.button {
+  cursor: pointer;
+}
+
+.unselectable {
+  user-select: none;
+}
+body {
+  overscroll-behavior-y: contain;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  background: #002769;
+  background: linear-gradient(
+    145deg,
+    rgba(2, 85, 201, 1) 49%,
+    rgba(0, 39, 105, 1) 100%
+  );
+  /* background: linear-gradient(120deg, #0255c9, #002769); */
+  color: white;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow-wrap: break-word;
+}
+body {
+  font-family: "Poppins", sans-serif;
+}
+h1 {
+  font-weight: 600;
+}
+h4 {
+  font-weight: 600;
+}
+.avatar {
+  border-radius: 40px;
+  /* position: fixed;
+  top: 10;
+  right: 10; */
+}
+.paddingTop {
+  padding-top: 40px;
+}
+.roundedBox {
+  border-radius: 15px;
+  background-color: white;
+  color: black;
+}
+.yellowBox {
+  background-color: #e8ce28;
+}
