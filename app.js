@@ -1,4 +1,5 @@
 navigator.serviceWorker.register("/worker.js");
+var user = localStorage.getItem('user') || {}
 
 // This variable will save the event for later use.
 let deferredPrompt;
@@ -75,18 +76,19 @@ async function handleCredentialResponse(response) {
   user = await googleUser.json();
 
   if (user.email) {
+    localStorage.setItem("user", user)
     setValuesToUI(user);
   }
 }
 
 window.onload = async function () {
   console.log("LOAD!");
-  let userResponse = await fetch(`https://auth.cloud.democraid.com/user.json`, {
-    credentials: "include",
-  });
-  user = await userResponse.json();
+  // let userResponse = await fetch(`https://auth.cloud.democraid.com/user.json`, {
+  //   credentials: "include",
+  // });
+  // user = await userResponse.json();
 
-  console.log("USER", user);
+  // console.log("USER", user);
 
   // main();
 
