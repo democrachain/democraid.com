@@ -10,23 +10,7 @@
   "gcm_user_visible_only": true,
   "icons": [
     {
-        "src": "/iconx/android-chrome-192x192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-    },
-    {
-        "src": "/iconx/android-chrome-512x512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-    },
-    {
-      "src": "/iconx/android-chrome-maskable-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/iconx/android-chrome-maskable-512x512.png",
+      "src": "/icon/wpa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -40,17 +24,17 @@
       "type": "image/png"
     }
   ],
-  "short_name": "VeneAvatar",
-  "start_url": "https://democrachain.com/",
+  "short_name": "DemocraID",
+  "start_url": "https://democraid.com/",
   "theme_color": "#0255cf",
   "scope": "/",
-  "android_package_name": "com.democrachain.veneavatar",
+  "android_package_name": "com.democraid.id",
   "prefer_related_applications": true,
   "related_applications": [
     {
-      "id": "com.democrachain.veneavatar",
+      "id": "com.democraid.id",
       "platform": "chromeos_play",
-      "url": "https://play.google.com/store/apps/details?id=com.democrachain.veneavatar"
+      "url": "https://play.google.com/store/apps/details?id=com.democraid.id"
     }
   ],
   "launch_handler": {

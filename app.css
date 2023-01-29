@@ -39,6 +39,14 @@ h4 {
   top: 10;
   right: 10; */
 }
+
+.logo {
+  border-radius: 15px;
+  /* position: fixed;
+  top: 10;
+  right: 10; */
+}
+
 .paddingTop {
   padding-top: 40px;
 }

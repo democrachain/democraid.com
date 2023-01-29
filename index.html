@@ -3,13 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>VeneAvatar</title>
-    <link
-      rel="icon"
-      href="/iconx/android-chrome-512x512.png"
-      type="image/svg+xml"
-    />
-    <link rel="apple-touch-icon" href="/iconx/android-chrome-512x512.png" />
+    <title>DemocraID</title>
+    
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
     <link
       href="/css/bootstrap-reboot.css"
@@ -26,33 +21,77 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
       rel="stylesheet"
     />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/icon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/icon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/icon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/icon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/icon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/icon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/icon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16.png">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
   </head>
   <style>
 
   </style>
   <body>
-    <div class="container p-5" style="margin-top: 40px">
+    <div class="container loginUI" style="margin-top: 40px">
+      <div class="row">
+        <div class="col">
+          <h1 class="bienvenido">DemocraID</h1>
+          <h2 class="bienvenido" style="margin-bottom: 20px;">Tu Identidad Digital Privada y Segura</h2>
+          <div id="googleLoginButton"></div>
+          <div class="text-center fixed-bottom">
+            <span class="m-3">Powered by <a style="color: white;font-weight: 600;" href="https://democrachain.org/">democrachain.org</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container p-1 d-none pagMain" style="margin-top: 40px">
       <div class="row text-center">
         <div class="col">
-          <img
+          <img id="userPicture"
             class="avatar"
-            src="https://gravatar.com/avatar/f47796a85fe1ae4d634d3d2f5bdb5178"
           />
         </div>
       </div>
 
       <div class="row text-center">
         <div class="col">
-          <h1 class="bienvenido">Carlos</h1>
+          <h1 id="given_name" class="bienvenido"></h1>
         </div>
       </div>
     </div>
 
-    <div class="container overflow-hidden p-4">
+    <div class="container p-1 d-none pagVoto" style="margin-top: 40px">
+      <div class="row text-center">
+        <div class="col">
+          <h3>Comunidad Carmen</h3>
+          <h5>Votacion Anónima #001</h5>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welcome -->
+    <div class="container overflow-hidden p-4 pagMain d-none">
       <div class="row">
         <div class="col-12">
-          <div class="p-3 roundedBox yellowBox">
-            <img width="50" src="img/participaciones.png" />
+          <div class="p-3 roundedBox">
+            <img class="py-2" width="50" src="img/layers.png" />
             <h4>Ver participaciones</h4>
             <span>Verifica el estado de tus participaciones</span>
           </div>
@@ -60,21 +99,63 @@
       </div>
       <div class="row py-4">
         <div class="col-6">
-          <div id="votar" class="p-3 roundedBox button" style="height: 100%">
-            <img width="50" src="img/votar.png" />
+          <div id="votar" class="p-3 roundedBox button yellowBox" style="height: 100%">
+            <img class="py-2" width="50" src="img/download.png" />
             <h4>Votar</h4>
             <span>Participar ahora</span>
           </div>
         </div>
         <div class="col-6">
           <div class="p-3 roundedBox" style="height: 100%">
-            <img width="50" src="img/docs.png" />
-            <h5>Documentos</h5>
+            <img class="py-2" width="50" src="img/documents.png" />
+            <h6>Documentos</h6>
           </div>
         </div>
       </div>
     </div>
 
+    <div class="container overflow-hidden p-4 d-none pagVoto">
+      <div class="row">
+        <div class="col-12">
+          <div class="p-3 roundedBox grayBox">
+            <h4>
+              ¿Consideras que se debe poner un portón eléctrico en la comunidad?
+            </h4>
+            <h5>Selecciona uno:</h5>
+            <div class="row py-4">
+              <div class="col-6">
+                <div class="p-3 roundedBox" style="height: 100%">
+                  <h4>Sí ✅</h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 roundedBox" style="height: 100%">
+                  <h4>No</h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <span>La votación cierra el <b>31 de Enero del 2023 a las 10:00pm</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="m-3 roundedBox yellowBox text-center">
+              <h4 class="p-3">
+                VOTAR
+              </h4>
+          </div>
+          <div id="back2" class="m-3 roundedBox button text-center">
+            <h4 id="back" class="p-3">
+              CANCELAR
+            </h4>
+        </div>
+        </div>
+      </div>
+    </div>
+<!-- 
     <div class="container text-center">
       <div class="row">
         <div class="col">
@@ -82,7 +163,7 @@
           <span>Todas tus participaciones han sido procesadas.</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- <div class="container fixed-bottom text-center">
       <div class="row">
