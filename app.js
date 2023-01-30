@@ -75,6 +75,8 @@ async function handleCredentialResponse(response) {
   );
   user = await googleUser.json();
 
+  console.log("user", user)
+
   if (user.email) {
     localStorage.setItem("user", JSON.stringify(user))
     setValuesToUI(user);
