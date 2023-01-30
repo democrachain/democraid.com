@@ -55,6 +55,12 @@ h4 {
   background-color: white;
   color: black;
 }
+
+.voteOption {
+  background-color: #dbdbdb;
+}
+
 .yellowBox {
   background-color: #e8ce28;
 }
+

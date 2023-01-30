@@ -1,4 +1,7 @@
 navigator.serviceWorker.register("/worker.js");
+var vote;
+let headers = {};
+let endpoint = "https://v2-brasil-node.cloud.democrachain.org"
 
 var user = {
   iss: "https://accounts.google.com",
@@ -23,10 +26,47 @@ var user = {
   },
 };
 
-if(window.location.origin === 'https://democraid.com') {
-  var savedUser = localStorage.getItem("user")
+if (window.location.origin === "https://democraid.com") {
+  var savedUser = localStorage.getItem("user");
   user = savedUser ? JSON.parse(savedUser) : {};
-} 
+}
+
+async function generateBlock(user, scope, data) {
+  let privKey = await getPrivKey(user.keys) 
+  console.log("privKey", privKey)
+  user.keys.endpoint = endpoint
+
+  let scopeHead = await fetch(
+    `${endpoint}/_head/${scope}`
+  );
+  scopeHead = await scopeHead.json();
+  console.log("scopeHead", scopeHead)
+
+  let votacionBloque = await fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/_block/${scope}`
+  );
+  votacionBloque = await votacionBloque.json();
+
+  let block =  {
+    prevHash: "",
+    height: "",
+    version: 2,
+    data: "HELLO",
+    timestamp: new Date().getTime(),
+    scope: "democraid/" + user.democraid,
+    signature: "",
+    by: "democraid/" + user.democraid,
+    rootPrevHash: "",
+    rootHeight: "",
+  }
+
+  let sigHash = await getSignatureAndHash(user.keys, block)
+  console.log("sigHash", sigHash)
+
+  // block.
+}
+
+generateBlock(user, "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb", "HELLO WORLD")
 
 // This variable will save the event for later use.
 let deferredPrompt;
@@ -48,33 +88,103 @@ window.addEventListener("beforeinstallprompt", (e) => {
   // showInAppInstallPromotion();
 });
 
+function setValuesToVote(headers) {
+  document.getElementById("voteComunity").innerText = headers.comunity;
+  document.getElementById("voteType").innerText = headers.type;
+  document.getElementById("voteQuestion").innerText = headers.question;
+  document.getElementById("option_1").innerText = headers["option_1"];
+  document.getElementById("option_2").innerText = headers["option_2"];
+}
+
+async function cargarVotaciones() {
+  hideAll("pagMain");
+  let votacionActual = await fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/democraid/_/votacionActual`
+  );
+  votacionActual = await votacionActual.json();
+  console.log("votacionActual", votacionActual);
+
+  let votacionBloque = await fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/_block/${votacionActual.hash}`
+  );
+  votacionBloque = await votacionBloque.json();
+  console.log("votacionBloque", votacionBloque);
+
+  let lines = votacionBloque.data.split("\n");
+  let line = lines.shift();
+  while (line.indexOf("//") === 0) {
+    line = lines.shift();
+    headers[line.split(": ")[0].toLowerCase().replace("// ", "")] =
+      line.split(": ")[1];
+  }
+
+  console.log("headers", headers);
+  setValuesToVote(headers);
+
+  console.log("data", votacionBloque.data);
+
+  showAll("pagVoto");
+}
+
 var boxes = document.getElementsByClassName("button");
 for (var i = 0; i < boxes.length; i++) {
   console.log(boxes[i]);
   boxes[i].onclick = function (id, evt) {
-    console.log(evt.target.parent);
-    if (evt.target.id === "votar") {
-      document.location = "/votar.html";
+    console.log("click id", id);
+    if (id === "votar") {
+      cargarVotaciones();
     }
     if (evt.target.id === "back") {
-      history.back();
+      hideAll("pagVoto");
+      showAll("pagMain");
+      // history.back();
     }
   }.bind(null, boxes[i].id);
 }
 
-function hideAll(className) {
+var boxes = document.getElementsByClassName("voteOption");
+for (var i = 0; i < boxes.length; i++) {
+  console.log(boxes[i]);
+  boxes[i].onclick = function (id, evt) {
+    hideAll("option-selected");
+    showAll("voteOption", "yellowBox");
+    voto = headers[id.replace("_selected", "")];
+    console.log("voto", voto);
+    showAll(id);
+
+    let votarButton = document.getElementById("votarButton")
+    votarButton.classList.add("yellowBox");
+    votarButton.onclick = async () => {
+      console.log("ENVIAR VOTO!");
+      hideAll("backButton");
+      document.getElementById("votarButtonText").innerText = "ENVIANDO..."
+      var boxes = document.getElementsByClassName("voteOption");
+      for (var i = 0; i < boxes.length; i++) {
+        console.log(boxes[i]);
+        boxes[i].onclick = function (id, evt) {};
+
+
+
+      }
+    };
+  }.bind(null, boxes[i].id);
+}
+
+var voteButton = document.getElementsByClassName("voteOption");
+
+function hideAll(className, removeMe = "d-none") {
   var boxes = document.getElementsByClassName(className);
   console.log("hiding", boxes);
   for (var i = 0; i < boxes.length; i++) {
-    boxes[i].classList.add("d-none");
+    boxes[i].classList.add(removeMe);
   }
 }
 
-function showAll(className) {
+function showAll(className, addMe = "d-none") {
   var boxes = document.getElementsByClassName(className);
   console.log("showing", boxes);
   for (var i = 0; i < boxes.length; i++) {
-    boxes[i].classList.remove("d-none");
+    boxes[i].classList.remove(addMe);
   }
 }
 

@@ -10,8 +10,8 @@
   "gcm_user_visible_only": true,
   "icons": [
     {
-      "src": "/icon/wpa-512x512.png",
-      "sizes": "512x512",
+      "src": "/icon/wpa-256x256.png",
+      "sizes": "256x256",
       "type": "image/png",
       "purpose": "maskable"
     }
@@ -28,13 +28,13 @@
   "start_url": "https://democraid.com/",
   "theme_color": "#0255cf",
   "scope": "/",
-  "android_package_name": "com.democraid.id",
+  "android_package_name": "com.democraid",
   "prefer_related_applications": true,
   "related_applications": [
     {
       "id": "com.democraid.id",
       "platform": "chromeos_play",
-      "url": "https://play.google.com/store/apps/details?id=com.democraid.id"
+      "url": "https://play.google.com/store/apps/details?id=com.democraid"
     }
   ],
   "launch_handler": {
