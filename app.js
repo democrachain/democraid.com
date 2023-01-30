@@ -1,11 +1,18 @@
 navigator.serviceWorker.register("/worker.js");
+
+if(document.location.search === "?logout=true") {
+  localStorage.removeItem("user")
+}
+
 var vote;
+let scope
 let headers = {};
-let endpoint = "https://v2-brasil-node.cloud.democrachain.org"
+let endpoint = "https://v2-brasil-node.cloud.democrachain.org";
+let votacionActual
 
 var user = {
   iss: "https://accounts.google.com",
-  nbf: 1675036818,
+  nbf: 1675051556,
   aud: "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
   sub: "105410578508952183300",
   email: "guerrerocarlos@gmail.com",
@@ -16,13 +23,13 @@ var user = {
     "https://lh3.googleusercontent.com/a/AEdFTp4r1m8LwTxbtef0e3dzyP080lfIX4BzRdoos88kr38=s96-c",
   given_name: "Carlos",
   family_name: "Guerrero",
-  iat: 1675037118,
-  exp: 1675040718,
-  jti: "921280f2cf730d34f8bf6dc332b07b7e69ebd9f7",
+  iat: 1675051856,
+  exp: 1675055456,
+  jti: "1667688f611703a4df355f549a4b2068dd7c8128",
   democraid: "ueec5d4c973",
   keys: {
-    priv: "-----BEGIN RSA PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWR1SahFRee/pvhBvxrX/beIFpfOJl4MMMPKawawX0CKEOj48r7HYfx6mS/gU6Hbu/ueY6Dc4oCvk0Oi6brDIj31KQ+CQLqmJLkVVm+ASwvyyN4Ag38qlvfns2vTHUM7+eokj3cA+cW/19mhg+iUFRP0v4g1LkpaAZ7q9izf7TrxEDPMJuo2NGnJIMKw9bHdR41tf3Fk8Kbc66VWZm5IdPRrgATRkulyWo9xhhhQMkf5jPkBciQRbshRs9wwFHq8gKDmOpwCnX0HzB4xV2tOPBD2XlunGsVpyJq5bheId1YQ1ZFCQBV2/ZNZNNdnK92OUvx2ffAhALFdxvuS+/S1rHAgMBAAECggEBAMzPVyVt0HqTA9dtLYx96lSrRP6/+GGqSKQ8oJLFaOZNDSwuuYkhNfLAU+wE0pgu7VKfbFgW8/LAMlviNMRk/XPeNDwOgd2ImPVjz35hF5Kc2Agvl4tqbNr9yOWURrluUPxeX2HqgXFRV+Si0gOMC5uN5Z5+X0/eoz3GL2tAPA61aUjhDkRF0ehwIl70XLD+C4U8nCfBZNtiP8eM06jMNFtBOzsU4vDaR9Wa9jyev5qaQuT1Vau4ncYUXcQZPWZrLdNw7Gxj1j6o2ijh1XoFrz8Z3Z3A/K1wneLikHQUmlOk90ard/FQu6nD8wGKqDgw5KmRLAPmabyfXKydqqcuduECgYEA9ejrDqDAnCyOlfQd7B/RH3cYR5O7IFUK+Cf1xnzA748rfmyHxXZaYeM98ppIJJ/yg9hfmQiFneZqIslSXA8pomUEE4i0+lhmicrFJG6r6o4i61sFak75mueQeAF2awnNwOv87F4zRBcJHsxZYdGTKiHASWTdaswV3v0nS/DMRVECgYEA3xInAdX8SWQwS0ZjaTdfkc1Y5UTf7ksqiK/N1gqc9yZ8aBRVDxqMTIEVHwdTo8wn+AWo5ySOmQ6pmYuvg66Str9T1bEjbxPrPDBxN2Thx7V5uRmHi5QWks9ZTb1V9TPUnBVDQxwYT6m0HuvL1YrqqVYzdlrYRv4W15NP0E8o+JcCgYEAlxk4HXPfBddHAZLPNABU0d2u2IRIrdQzekmrdfu/3TL+iZ8MSeOwI4eqz7/G5mI1dJfmHbUjzOMAgkFrzs8uSO+C8rHEajMZRj+GpR0vm18cy7rQ+AJw0qLInURgy+JpP8qBTYeQPp1c6ESuAzHwGCpG6ZIFjxK5uZuZosrh6RECgYABPE2BAhlqoqZt1E76pzbdTODgLDh9TmdG6IpgVCC4cbsgrHQoKEJ8rf5a9KRu9NOH2SgtV5N+n4kq844eUZo4bujc9yU2GUslQzNtVh62B3hMISsSB9j0KTfaaWEPgaD82FVOCtrLnioEPdQcM6/HDlYsoqYuBnxD52n6wmV8swKBgQD0wM+yaLDQotApoXdHUFbu3oFqdHHF/cA4vs08tJvCH0SxYWd+3n9jj7QrUMEANq2s+1YRsZjKcN1U3qCa372IVnXMzyIrc+yNR62sbRWtL6JcXXzUy+yUf97fNIu+rbRmHjTD1B+2SMPMRNPXMFlKumnV8LqkliwUZXj9IwgZ+g==\n-----END RSA PRIVATE KEY-----",
-    pub: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1kdUmoRUXnv6b4Qb8a1/23iBaXziZeDDDDymsGsF9AihDo+PK+x2H8epkv4FOh27v7nmOg3OKAr5NDoum6wyI99SkPgkC6piS5FVZvgEsL8sjeAIN/Kpb357Nr0x1DO/nqJI93APnFv9fZoYPolBUT9L+INS5KWgGe6vYs3+068RAzzCbqNjRpySDCsPWx3UeNbX9xZPCm3OulVmZuSHT0a4AE0ZLpclqPcYYYUDJH+Yz5AXIkEW7IUbPcMBR6vICg5jqcAp19B8weMVdrTjwQ9l5bpxrFaciauW4XiHdWENWRQkAVdv2TWTTXZyvdjlL8dn3wIQCxXcb7kvv0taxwIDAQAB\n-----END PUBLIC KEY-----",
+    pub: "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnqzVOrjjyTbzT2YtaClsVFNhiraFkzYUnap1U0ZPRN8JqgHlXj1Glh/0rib9foCbkxLduCJO3Hy01ynNAGwNbSGCL3ye81Dtmi9Wvzg0YOxaolxFgHlK42iKMFKisKXIvKWKkYCYKUk01bYk4nRqK+c2ALzUHRsd1SgD9juyacZC/VhwEHIZefwMtGmBYIpoBswEpd9ls9GvpEUTfi75UozjH8K9aZ8i5l1xjjrKq/u5SCzw+mF7mnc+09hN6MXVevhEeEKgUYwPHm1U9w2ulAo8CTUg2BAiWKWaixn52JJQnof1b2HihUVi8xeyuyE6uCc9mytAaqwE/VAFdYATEwIDAQAB-----END PUBLIC KEY-----",
+    priv: "-----BEGIN RSA PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCerNU6uOPJNvNPZi1oKWxUU2GKtoWTNhSdqnVTRk9E3wmqAeVePUaWH/SuJv1+gJuTEt24Ik7cfLTXKc0AbA1tIYIvfJ7zUO2aL1a/ODRg7FqiXEWAeUrjaIowUqKwpci8pYqRgJgpSTTVtiTidGor5zYAvNQdGx3VKAP2O7JpxkL9WHAQchl5/Ay0aYFgimgGzASl32Wz0a+kRRN+LvlSjOMfwr1pnyLmXXGOOsqr+7lILPD6YXuadz7T2E3oxdV6+ER4QqBRjA8ebVT3Da6UCjwJNSDYECJYpZqLGfnYklCeh/VvYeKFRWLzF7K7ITq4Jz2bK0BqrAT9UAV1gBMTAgMBAAECggEAMrBzzbaSzgzH3W1+w++3s5iPaIi2UzjLjTKPGHM1j4LQy4afh2N70SmUOK4r/OWIzYsRWWlcWANeof2wh5n9EAfMVu8wt/n6bW8B/0QtN2lJ6uQfL9OPoOYcfyNm5ZeQcPNROPojoczJHBx72/vkjvHlxoaMHGA1P4rw+RBJBpDWOzHRsdEgiHIoLhSOLiC38ozweMcUIgvgVxvNWFBdQG4gl3zjKHzxjMUbdBk9Xlk+8S3t4G2VQ8k957kgBwMKc9LQ9LcTsUroFkagJbHRLE7C30WL4huEP4zfJ8ht0CdtUkV2bNYXLHEgEhrc6Bl1zrePdaRsVjX9F94BN+rIAQKBgQDcfOX1DmWdd/y4MUzLJweCZsd9RrwX3KMRWf1U83ZPKdLuOA6RxgxBy4zpty1OeOCnh7XkhJ1RfCqpzY7gO6Mtnc4DQsCW+a2cIeYxdEcpRSAWu3AFwvGBRqxWoNG0vJ3GrlXVFHWReicfLTsbaFmBGu7UsJ72E6M+HBQu1PF1kwKBgQC4O0lV45d17HGUF/Bxt2vurrqi4zP4uMJl6IFnoCwf1EPGeAWfsBf9c8BKGYOi2CX18NPLn8mSrFrX7Ecue052SDc046Furqd01KHdBraW8Gtg5sIh7ywNBzMYCLXDGMLHQHk8Arr3HTYtCejtwwB8xEiSn1+PwudIB+7v5AFcgQKBgQC3AmBo2CtV2esFA76m/N1Jyn+Ypyamc7dSRqx0X6R6rs9qdVL6gjVYQ1jSAP31HXXy+Dzs0Xo20WYkDP+jdTzLNylxIW3zoogMiUKlF8udIMgyth+UWKvWTs/rE48cglY/PCL4OwQe3RIt2YAvDp0EAVPtbDB1NfWQLwQ9nvhQSwKBgHadXTsaXIMFJ59Uxm9AzBIRl4KWS/jgY/EfAGoKmz4m+TgIQH6u7tM1OmG7CaDID7DITGS2zR5NL/QDYVUQ+NR47Gp2AJL1ikVTPZ/D2b1Wr5vlFqqohbEhqIjZ2sTw5T9KSIQVsfC2cxIOZlTmjyLFcYBNckZqE2SyDumO4D2BAoGAefG1LdM6hnBme1/Z6WmJ9OtdM+q3ami7oWL33S5MivUkHOoxAH1nARSppymjayyWE9oM0sktaiVrDlZak2PGUeNF76YTv4jZYl+yyxDRONtO5FWdVrZg5qJJYmDWJQObf617NIVNXIjWZNeTKLpj/5FLJ8P3BsSOSHb/+anjJ1c=\n-----END RSA PRIVATE KEY-----",
   },
 };
 
@@ -30,43 +37,6 @@ if (window.location.origin === "https://democraid.com") {
   var savedUser = localStorage.getItem("user");
   user = savedUser ? JSON.parse(savedUser) : {};
 }
-
-async function generateBlock(user, scope, data) {
-  let privKey = await getPrivKey(user.keys) 
-  console.log("privKey", privKey)
-  user.keys.endpoint = endpoint
-
-  let scopeHead = await fetch(
-    `${endpoint}/_head/${scope}`
-  );
-  scopeHead = await scopeHead.json();
-  console.log("scopeHead", scopeHead)
-
-  let votacionBloque = await fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/_block/${scope}`
-  );
-  votacionBloque = await votacionBloque.json();
-
-  let block =  {
-    prevHash: "",
-    height: "",
-    version: 2,
-    data: "HELLO",
-    timestamp: new Date().getTime(),
-    scope: "democraid/" + user.democraid,
-    signature: "",
-    by: "democraid/" + user.democraid,
-    rootPrevHash: "",
-    rootHeight: "",
-  }
-
-  let sigHash = await getSignatureAndHash(user.keys, block)
-  console.log("sigHash", sigHash)
-
-  // block.
-}
-
-generateBlock(user, "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb", "HELLO WORLD")
 
 // This variable will save the event for later use.
 let deferredPrompt;
@@ -98,7 +68,7 @@ function setValuesToVote(headers) {
 
 async function cargarVotaciones() {
   hideAll("pagMain");
-  let votacionActual = await fetch(
+  votacionActual = await fetch(
     `https://v2-brasil-node.cloud.democrachain.org/democraid/_/votacionActual`
   );
   votacionActual = await votacionActual.json();
@@ -134,12 +104,62 @@ for (var i = 0; i < boxes.length; i++) {
     if (id === "votar") {
       cargarVotaciones();
     }
-    if (evt.target.id === "back") {
+    if (id === "back") {
       hideAll("pagVoto");
       showAll("pagMain");
       // history.back();
     }
   }.bind(null, boxes[i].id);
+}
+
+async function generateBlock(user, scope, data) {
+  let privKey = await getPrivKey(user.keys);
+  console.log("privKey", privKey);
+  user.keys.endpoint = endpoint;
+
+  let scopeHead = await fetch(`${endpoint}/_head/${scope}`);
+  scopeHead = await scopeHead.json();
+  console.log("scopeHead", scopeHead);
+  if (scopeHead.error) {
+    scopeHead = {
+      head: "",
+      height: 0,
+    };
+  }
+
+  let votacionBloque = await fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/_block/${scope}`
+  );
+  votacionBloque = await votacionBloque.json();
+
+  let block = {
+    prevHash: scopeHead.head,
+    height: scopeHead.height + 1,
+    version: 2,
+    data: `// IMPORT d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb\n\n{voto: "${data}"}`,
+    timestamp: new Date().getTime(),
+    scope: "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb",
+    signature: "",
+    by: "democraid/" + user.democraid,
+    rootPrevHash: "",
+    rootHeight: "",
+  };
+
+  let sigHash = await getSignatureAndHash(user.keys, block);
+  console.log("sigHash", sigHash);
+
+  block.hash = sigHash.correctHash;
+
+  console.log("block", block);
+
+  let createResult = await fetch(`${endpoint}/newBlock`, {
+    method: "POST",
+    body: JSON.stringify(block),
+  });
+
+  console.log("💚 createResult", await createResult.json());
+
+  return block
 }
 
 var boxes = document.getElementsByClassName("voteOption");
@@ -152,23 +172,51 @@ for (var i = 0; i < boxes.length; i++) {
     console.log("voto", voto);
     showAll(id);
 
-    let votarButton = document.getElementById("votarButton")
+    let votarButton = document.getElementById("votarButton");
     votarButton.classList.add("yellowBox");
     votarButton.onclick = async () => {
       console.log("ENVIAR VOTO!");
       hideAll("backButton");
-      document.getElementById("votarButtonText").innerText = "ENVIANDO..."
+      document.getElementById("votarButtonText").innerText = "ENVIANDO...";
       var boxes = document.getElementsByClassName("voteOption");
       for (var i = 0; i < boxes.length; i++) {
         console.log(boxes[i]);
         boxes[i].onclick = function (id, evt) {};
-
-
-
       }
+
+      var bloque = await generateBlock(user, votacionActual.hash, voto)
+
+      let bloqueResultante = await fetch(
+        `https://v2-brasil-node.cloud.democrachain.org/_block/${bloque.hash}`
+      );
+      bloqueResultante = await bloqueResultante.json();
+      console.log("bloqueResultante1", bloqueResultante)
+      if(bloqueResultante.error) {
+        console.log("Try with failed?")
+        bloqueResultante = await fetch(
+          `https://v2-brasil-node.cloud.democrachain.org/_failed/${bloque.hash}`
+        );
+        bloqueResultante = await bloqueResultante.json();
+        console.log("bloqueResultante2", bloqueResultante)
+        
+      }
+
+      document.getElementById("votarButtonText").innerText = bloqueResultante.result || bloqueResultante.__err
+      if(bloqueResultante.__err) {
+        document.getElementById("votarButtonText").innerText = document.getElementById("votarButtonText").innerText.replace("Error: Error: ", "")
+        document.getElementById("votarButton").classList.add("errorColor")
+        // setTimeout(() => {
+        //   location.reload()
+        // }, 5000)
+      }
+
+      showAll("backButton");
+      
     };
   }.bind(null, boxes[i].id);
 }
+
+
 
 var voteButton = document.getElementsByClassName("voteOption");
 
