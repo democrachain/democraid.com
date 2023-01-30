@@ -1,5 +1,6 @@
 navigator.serviceWorker.register("/worker.js");
-var user = localStorage.getItem('user') || {}
+var savedUser = localStorage.getItem('user')
+var user = savedUser ? JSON.parse(savedUser) : {}
 
 // This variable will save the event for later use.
 let deferredPrompt;
