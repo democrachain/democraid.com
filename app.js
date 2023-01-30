@@ -4,6 +4,7 @@ console.log(document.location.search);
 if (document.location.search === "?logout=true") {
   console.log("clean session");
   localStorage.removeItem("user");
+  document.location = "/"
 } else {
   if (window.location.origin === "https://democraid.com") {
     var savedUser = localStorage.getItem("user");
