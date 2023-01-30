@@ -1,42 +1,44 @@
 navigator.serviceWorker.register("/worker.js");
-
-if(document.location.search === "?logout=true") {
-  localStorage.removeItem("user")
+var user = {}
+console.log(document.location.search);
+if (document.location.search === "?logout=true") {
+  console.log("clean session");
+  localStorage.removeItem("user");
+} else {
+  if (window.location.origin === "https://democraid.com") {
+    var savedUser = localStorage.getItem("user");
+    user = savedUser ? JSON.parse(savedUser) : {};
+  }
 }
 
 var vote;
-let scope
+let scope;
 let headers = {};
 let endpoint = "https://v2-brasil-node.cloud.democrachain.org";
-let votacionActual
+let votacionActual;
 
-var user = {
-  iss: "https://accounts.google.com",
-  nbf: 1675051556,
-  aud: "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
-  sub: "105410578508952183300",
-  email: "guerrerocarlos@gmail.com",
-  email_verified: true,
-  azp: "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
-  name: "Carlos Guerrero",
-  picture:
-    "https://lh3.googleusercontent.com/a/AEdFTp4r1m8LwTxbtef0e3dzyP080lfIX4BzRdoos88kr38=s96-c",
-  given_name: "Carlos",
-  family_name: "Guerrero",
-  iat: 1675051856,
-  exp: 1675055456,
-  jti: "1667688f611703a4df355f549a4b2068dd7c8128",
-  democraid: "ueec5d4c973",
-  keys: {
-    pub: "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnqzVOrjjyTbzT2YtaClsVFNhiraFkzYUnap1U0ZPRN8JqgHlXj1Glh/0rib9foCbkxLduCJO3Hy01ynNAGwNbSGCL3ye81Dtmi9Wvzg0YOxaolxFgHlK42iKMFKisKXIvKWKkYCYKUk01bYk4nRqK+c2ALzUHRsd1SgD9juyacZC/VhwEHIZefwMtGmBYIpoBswEpd9ls9GvpEUTfi75UozjH8K9aZ8i5l1xjjrKq/u5SCzw+mF7mnc+09hN6MXVevhEeEKgUYwPHm1U9w2ulAo8CTUg2BAiWKWaixn52JJQnof1b2HihUVi8xeyuyE6uCc9mytAaqwE/VAFdYATEwIDAQAB-----END PUBLIC KEY-----",
-    priv: "-----BEGIN RSA PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCerNU6uOPJNvNPZi1oKWxUU2GKtoWTNhSdqnVTRk9E3wmqAeVePUaWH/SuJv1+gJuTEt24Ik7cfLTXKc0AbA1tIYIvfJ7zUO2aL1a/ODRg7FqiXEWAeUrjaIowUqKwpci8pYqRgJgpSTTVtiTidGor5zYAvNQdGx3VKAP2O7JpxkL9WHAQchl5/Ay0aYFgimgGzASl32Wz0a+kRRN+LvlSjOMfwr1pnyLmXXGOOsqr+7lILPD6YXuadz7T2E3oxdV6+ER4QqBRjA8ebVT3Da6UCjwJNSDYECJYpZqLGfnYklCeh/VvYeKFRWLzF7K7ITq4Jz2bK0BqrAT9UAV1gBMTAgMBAAECggEAMrBzzbaSzgzH3W1+w++3s5iPaIi2UzjLjTKPGHM1j4LQy4afh2N70SmUOK4r/OWIzYsRWWlcWANeof2wh5n9EAfMVu8wt/n6bW8B/0QtN2lJ6uQfL9OPoOYcfyNm5ZeQcPNROPojoczJHBx72/vkjvHlxoaMHGA1P4rw+RBJBpDWOzHRsdEgiHIoLhSOLiC38ozweMcUIgvgVxvNWFBdQG4gl3zjKHzxjMUbdBk9Xlk+8S3t4G2VQ8k957kgBwMKc9LQ9LcTsUroFkagJbHRLE7C30WL4huEP4zfJ8ht0CdtUkV2bNYXLHEgEhrc6Bl1zrePdaRsVjX9F94BN+rIAQKBgQDcfOX1DmWdd/y4MUzLJweCZsd9RrwX3KMRWf1U83ZPKdLuOA6RxgxBy4zpty1OeOCnh7XkhJ1RfCqpzY7gO6Mtnc4DQsCW+a2cIeYxdEcpRSAWu3AFwvGBRqxWoNG0vJ3GrlXVFHWReicfLTsbaFmBGu7UsJ72E6M+HBQu1PF1kwKBgQC4O0lV45d17HGUF/Bxt2vurrqi4zP4uMJl6IFnoCwf1EPGeAWfsBf9c8BKGYOi2CX18NPLn8mSrFrX7Ecue052SDc046Furqd01KHdBraW8Gtg5sIh7ywNBzMYCLXDGMLHQHk8Arr3HTYtCejtwwB8xEiSn1+PwudIB+7v5AFcgQKBgQC3AmBo2CtV2esFA76m/N1Jyn+Ypyamc7dSRqx0X6R6rs9qdVL6gjVYQ1jSAP31HXXy+Dzs0Xo20WYkDP+jdTzLNylxIW3zoogMiUKlF8udIMgyth+UWKvWTs/rE48cglY/PCL4OwQe3RIt2YAvDp0EAVPtbDB1NfWQLwQ9nvhQSwKBgHadXTsaXIMFJ59Uxm9AzBIRl4KWS/jgY/EfAGoKmz4m+TgIQH6u7tM1OmG7CaDID7DITGS2zR5NL/QDYVUQ+NR47Gp2AJL1ikVTPZ/D2b1Wr5vlFqqohbEhqIjZ2sTw5T9KSIQVsfC2cxIOZlTmjyLFcYBNckZqE2SyDumO4D2BAoGAefG1LdM6hnBme1/Z6WmJ9OtdM+q3ami7oWL33S5MivUkHOoxAH1nARSppymjayyWE9oM0sktaiVrDlZak2PGUeNF76YTv4jZYl+yyxDRONtO5FWdVrZg5qJJYmDWJQObf617NIVNXIjWZNeTKLpj/5FLJ8P3BsSOSHb/+anjJ1c=\n-----END RSA PRIVATE KEY-----",
-  },
-};
-
-if (window.location.origin === "https://democraid.com") {
-  var savedUser = localStorage.getItem("user");
-  user = savedUser ? JSON.parse(savedUser) : {};
-}
+// var user = {
+//   iss: "https://accounts.google.com",
+//   nbf: 1675051556,
+//   aud: "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
+//   sub: "105410578508952183300",
+//   email: "guerrerocarlos@gmail.com",
+//   email_verified: true,
+//   azp: "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
+//   name: "Carlos Guerrero",
+//   picture:
+//     "https://lh3.googleusercontent.com/a/AEdFTp4r1m8LwTxbtef0e3dzyP080lfIX4BzRdoos88kr38=s96-c",
+//   given_name: "Carlos",
+//   family_name: "Guerrero",
+//   iat: 1675051856,
+//   exp: 1675055456,
+//   jti: "1667688f611703a4df355f549a4b2068dd7c8128",
+//   democraid: "ueec5d4c973",
+//   keys: {
+//     pub: "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnqzVOrjjyTbzT2YtaClsVFNhiraFkzYUnap1U0ZPRN8JqgHlXj1Glh/0rib9foCbkxLduCJO3Hy01ynNAGwNbSGCL3ye81Dtmi9Wvzg0YOxaolxFgHlK42iKMFKisKXIvKWKkYCYKUk01bYk4nRqK+c2ALzUHRsd1SgD9juyacZC/VhwEHIZefwMtGmBYIpoBswEpd9ls9GvpEUTfi75UozjH8K9aZ8i5l1xjjrKq/u5SCzw+mF7mnc+09hN6MXVevhEeEKgUYwPHm1U9w2ulAo8CTUg2BAiWKWaixn52JJQnof1b2HihUVi8xeyuyE6uCc9mytAaqwE/VAFdYATEwIDAQAB-----END PUBLIC KEY-----",
+//     priv: "-----BEGIN RSA PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCerNU6uOPJNvNPZi1oKWxUU2GKtoWTNhSdqnVTRk9E3wmqAeVePUaWH/SuJv1+gJuTEt24Ik7cfLTXKc0AbA1tIYIvfJ7zUO2aL1a/ODRg7FqiXEWAeUrjaIowUqKwpci8pYqRgJgpSTTVtiTidGor5zYAvNQdGx3VKAP2O7JpxkL9WHAQchl5/Ay0aYFgimgGzASl32Wz0a+kRRN+LvlSjOMfwr1pnyLmXXGOOsqr+7lILPD6YXuadz7T2E3oxdV6+ER4QqBRjA8ebVT3Da6UCjwJNSDYECJYpZqLGfnYklCeh/VvYeKFRWLzF7K7ITq4Jz2bK0BqrAT9UAV1gBMTAgMBAAECggEAMrBzzbaSzgzH3W1+w++3s5iPaIi2UzjLjTKPGHM1j4LQy4afh2N70SmUOK4r/OWIzYsRWWlcWANeof2wh5n9EAfMVu8wt/n6bW8B/0QtN2lJ6uQfL9OPoOYcfyNm5ZeQcPNROPojoczJHBx72/vkjvHlxoaMHGA1P4rw+RBJBpDWOzHRsdEgiHIoLhSOLiC38ozweMcUIgvgVxvNWFBdQG4gl3zjKHzxjMUbdBk9Xlk+8S3t4G2VQ8k957kgBwMKc9LQ9LcTsUroFkagJbHRLE7C30WL4huEP4zfJ8ht0CdtUkV2bNYXLHEgEhrc6Bl1zrePdaRsVjX9F94BN+rIAQKBgQDcfOX1DmWdd/y4MUzLJweCZsd9RrwX3KMRWf1U83ZPKdLuOA6RxgxBy4zpty1OeOCnh7XkhJ1RfCqpzY7gO6Mtnc4DQsCW+a2cIeYxdEcpRSAWu3AFwvGBRqxWoNG0vJ3GrlXVFHWReicfLTsbaFmBGu7UsJ72E6M+HBQu1PF1kwKBgQC4O0lV45d17HGUF/Bxt2vurrqi4zP4uMJl6IFnoCwf1EPGeAWfsBf9c8BKGYOi2CX18NPLn8mSrFrX7Ecue052SDc046Furqd01KHdBraW8Gtg5sIh7ywNBzMYCLXDGMLHQHk8Arr3HTYtCejtwwB8xEiSn1+PwudIB+7v5AFcgQKBgQC3AmBo2CtV2esFA76m/N1Jyn+Ypyamc7dSRqx0X6R6rs9qdVL6gjVYQ1jSAP31HXXy+Dzs0Xo20WYkDP+jdTzLNylxIW3zoogMiUKlF8udIMgyth+UWKvWTs/rE48cglY/PCL4OwQe3RIt2YAvDp0EAVPtbDB1NfWQLwQ9nvhQSwKBgHadXTsaXIMFJ59Uxm9AzBIRl4KWS/jgY/EfAGoKmz4m+TgIQH6u7tM1OmG7CaDID7DITGS2zR5NL/QDYVUQ+NR47Gp2AJL1ikVTPZ/D2b1Wr5vlFqqohbEhqIjZ2sTw5T9KSIQVsfC2cxIOZlTmjyLFcYBNckZqE2SyDumO4D2BAoGAefG1LdM6hnBme1/Z6WmJ9OtdM+q3ami7oWL33S5MivUkHOoxAH1nARSppymjayyWE9oM0sktaiVrDlZak2PGUeNF76YTv4jZYl+yyxDRONtO5FWdVrZg5qJJYmDWJQObf617NIVNXIjWZNeTKLpj/5FLJ8P3BsSOSHb/+anjJ1c=\n-----END RSA PRIVATE KEY-----",
+//   },
+// };
 
 // This variable will save the event for later use.
 let deferredPrompt;
@@ -159,7 +161,7 @@ async function generateBlock(user, scope, data) {
 
   console.log("💚 createResult", await createResult.json());
 
-  return block
+  return block;
 }
 
 var boxes = document.getElementsByClassName("voteOption");
@@ -184,39 +186,38 @@ for (var i = 0; i < boxes.length; i++) {
         boxes[i].onclick = function (id, evt) {};
       }
 
-      var bloque = await generateBlock(user, votacionActual.hash, voto)
+      var bloque = await generateBlock(user, votacionActual.hash, voto);
 
       let bloqueResultante = await fetch(
         `https://v2-brasil-node.cloud.democrachain.org/_block/${bloque.hash}`
       );
       bloqueResultante = await bloqueResultante.json();
-      console.log("bloqueResultante1", bloqueResultante)
-      if(bloqueResultante.error) {
-        console.log("Try with failed?")
+      console.log("bloqueResultante1", bloqueResultante);
+      if (bloqueResultante.error) {
+        console.log("Try with failed?");
         bloqueResultante = await fetch(
           `https://v2-brasil-node.cloud.democrachain.org/_failed/${bloque.hash}`
         );
         bloqueResultante = await bloqueResultante.json();
-        console.log("bloqueResultante2", bloqueResultante)
-        
+        console.log("bloqueResultante2", bloqueResultante);
       }
 
-      document.getElementById("votarButtonText").innerText = bloqueResultante.result || bloqueResultante.__err
-      if(bloqueResultante.__err) {
-        document.getElementById("votarButtonText").innerText = document.getElementById("votarButtonText").innerText.replace("Error: Error: ", "")
-        document.getElementById("votarButton").classList.add("errorColor")
+      document.getElementById("votarButtonText").innerText =
+        bloqueResultante.result || bloqueResultante.__err;
+      if (bloqueResultante.__err) {
+        document.getElementById("votarButtonText").innerText = document
+          .getElementById("votarButtonText")
+          .innerText.replace("Error: Error: ", "");
+        document.getElementById("votarButton").classList.add("errorColor");
         // setTimeout(() => {
         //   location.reload()
         // }, 5000)
       }
 
       showAll("backButton");
-      
     };
   }.bind(null, boxes[i].id);
 }
-
-
 
 var voteButton = document.getElementsByClassName("voteOption");
 
