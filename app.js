@@ -1,5 +1,6 @@
 navigator.serviceWorker.register("/worker.js");
 var user = {}
+var results = []
 console.log(document.location.search);
 if (document.location.search === "?logout=true") {
   console.log("clean session");
@@ -17,6 +18,7 @@ let scope;
 let headers = {};
 let endpoint = "https://v2-brasil-node.cloud.democrachain.org";
 let votacionActual;
+let votacionBloque
 
 // var user = {
 //   iss: "https://accounts.google.com",
@@ -61,7 +63,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
   // showInAppInstallPromotion();
 });
 
-function setValuesToVote(headers) {
+function setValuesToVote() {
   document.getElementById("voteComunity").innerText = headers.comunity;
   document.getElementById("voteType").innerText = headers.type;
   document.getElementById("voteQuestion").innerText = headers.question;
@@ -69,19 +71,39 @@ function setValuesToVote(headers) {
   document.getElementById("option_2").innerText = headers["option_2"];
 }
 
-async function cargarVotaciones() {
-  hideAll("pagMain");
+function setValuesToParticipaciones() {
+  document.getElementById("voteComunity").innerText = headers.comunity;
+  document.getElementById("voteType").innerText = headers.type;
+  document.getElementById("voteQuestion").innerText = headers.question;
+  document.getElementById("option_1_participacion").innerText = headers["option_1"] + ": " + results[0];
+  document.getElementById("option_2_participacion").innerText = headers["option_2"] + ": " + results[1]
+  document.getElementById("participationHash").innerText = headers.block.hash;
+}
+
+async function getVoteMetadata() {
   votacionActual = await fetch(
     `https://v2-brasil-node.cloud.democrachain.org/democraid/_/votacionActual`
   );
   votacionActual = await votacionActual.json();
   console.log("votacionActual", votacionActual);
 
-  let votacionBloque = await fetch(
+  votacionBloque = await fetch(
     `https://v2-brasil-node.cloud.democrachain.org/_block/${votacionActual.hash}`
   );
   votacionBloque = await votacionBloque.json();
   console.log("votacionBloque", votacionBloque);
+
+  var resultsFetches = []
+  resultsFetches.push(fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/${votacionActual.hash}/_/votos/si`
+  ))
+  resultsFetches.push(fetch(
+    `https://v2-brasil-node.cloud.democrachain.org/${votacionActual.hash}/_/votos/no`
+  ))
+
+  results = await Promise.all((await Promise.all(resultsFetches)).map(async (res) => await res.text()))
+
+  console.log("results", results)
 
   let lines = votacionBloque.data.split("\n");
   let line = lines.shift();
@@ -90,14 +112,38 @@ async function cargarVotaciones() {
     headers[line.split(": ")[0].toLowerCase().replace("// ", "")] =
       line.split(": ")[1];
   }
+  headers.block = votacionBloque
+}
+
+
+async function showParticipaciones() {
+  showLoading()
+  await getVoteMetadata()
 
   console.log("headers", headers);
+  console.log("votacionBloque", votacionBloque);
+
+  setValuesToParticipaciones(headers);
+  showAll("pagParticipaciones");
+}
+
+async function cargarVotaciones() {
+  showLoading()
+  await getVoteMetadata()
+
+  console.log("headers", headers);
+  console.log("votacionBloque", votacionBloque);
+
   setValuesToVote(headers);
-
-  console.log("data", votacionBloque.data);
-
   showAll("pagVoto");
 }
+
+function showLoading() {
+  hideAll("pagVoto");
+  hideAll("pagMain");
+  showAll("pagLoading");
+}
+
 
 var boxes = document.getElementsByClassName("button");
 for (var i = 0; i < boxes.length; i++) {
@@ -106,12 +152,19 @@ for (var i = 0; i < boxes.length; i++) {
     console.log("click id", id);
     if (id === "votar") {
       cargarVotaciones();
+      return 
+    }
+    if (id === "participaciones") {
+      showParticipaciones();
+      return 
     }
     if (id === "back") {
       hideAll("pagVoto");
+      hideAll("pagParticipaciones");
       showAll("pagMain");
       // history.back();
     }
+
   }.bind(null, boxes[i].id);
 }
 
@@ -164,6 +217,13 @@ async function generateBlock(user, scope, data) {
 
   return block;
 }
+
+// let votarButton = document.getElementById("votarButton");
+// votarButton.classList.add("yellowBox");
+// votarButton.onclick = async () => {
+//   console.log("ENVIAR VOTO!");
+//   hideAll("backButton");
+// }
 
 var boxes = document.getElementsByClassName("voteOption");
 for (var i = 0; i < boxes.length; i++) {
@@ -231,6 +291,7 @@ function hideAll(className, removeMe = "d-none") {
 }
 
 function showAll(className, addMe = "d-none") {
+  hideAll("pagLoading");
   var boxes = document.getElementsByClassName(className);
   console.log("showing", boxes);
   for (var i = 0; i < boxes.length; i++) {
@@ -241,6 +302,7 @@ function showAll(className, addMe = "d-none") {
 console.log("INITED");
 
 function setValuesToUI(user) {
+  
   document.getElementById("userPicture").src = user.picture;
   document.getElementById("given_name").innerText = user.given_name;
   document.getElementById("user_id").innerText = user.democraid;
@@ -248,6 +310,7 @@ function setValuesToUI(user) {
   document.getElementById("googleLoginButton").style = "display: none;";
   // document.getElementById("userPicture").style = "display: block;";
 
+  hideAll("pagLoading");
   hideAll("loginUI");
   showAll("pagMain");
 }
@@ -317,6 +380,7 @@ window.onload = async function () {
     //   }); // also display the One Tap dialog
     // }, 1000);
   } else {
-    setValuesToUI(user);
+    // setValuesToUI(user);
+    showParticipaciones(user);
   }
 };
