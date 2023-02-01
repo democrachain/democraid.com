@@ -380,7 +380,7 @@ window.onload = async function () {
     //   }); // also display the One Tap dialog
     // }, 1000);
   } else {
-    // setValuesToUI(user);
-    showParticipaciones(user);
+    setValuesToUI(user);
+    // showParticipaciones(user);
   }
 };
