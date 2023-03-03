@@ -195,8 +195,8 @@ async function generateBlock(user, scope, data) {
     data: `// IMPORT d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb\n\n{voto: "${data}"}`,
     timestamp: new Date().getTime(),
     scope: "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb",
-    signature: "",
     by: "democraid/" + user.democraid,
+    signature: "",
     rootPrevHash: "",
     rootHeight: "",
   };

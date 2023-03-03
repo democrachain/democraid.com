@@ -200,7 +200,7 @@ async function getSignatureAndHash(params, block) {
   const encoder = new TextEncoder();
   const algorithmParameters = {
     name: "RSA-PSS",
-    saltLength: 128, //the length of the salt
+    saltLength: 32, //the length of the salt
   };
 
   console.log("BLOCK.signature", block.signature);
