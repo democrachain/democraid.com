@@ -16,7 +16,7 @@ if (document.location.search === "?logout=true") {
 var vote;
 let scope;
 let headers = {};
-let endpoint = "https://v2-brasil-node.cloud.democrachain.org";
+let endpoint = "https://demv2-brasil-node.cloud.democrachain.org/v2";
 let votacionActual;
 let votacionBloque
 
@@ -82,23 +82,23 @@ function setValuesToParticipaciones() {
 
 async function getVoteMetadata() {
   votacionActual = await fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/democraid/_/votacionActual`
+    `${endpoint}/democraid/_/votacionActual`
   );
   votacionActual = await votacionActual.json();
   console.log("votacionActual", votacionActual);
 
   votacionBloque = await fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/_block/${votacionActual.hash}`
+    `${endpoint}/_block/${votacionActual.hash}`
   );
   votacionBloque = await votacionBloque.json();
   console.log("votacionBloque", votacionBloque);
 
   var resultsFetches = []
   resultsFetches.push(fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/${votacionActual.hash}/_/votos/si`
+    `${endpoint}/${votacionActual.hash}/_/votos/si`
   ))
   resultsFetches.push(fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/${votacionActual.hash}/_/votos/no`
+    `${endpoint}/${votacionActual.hash}/_/votos/no`
   ))
 
   results = await Promise.all((await Promise.all(resultsFetches)).map(async (res) => await res.text()))
@@ -184,7 +184,7 @@ async function generateBlock(user, scope, data) {
   }
 
   let votacionBloque = await fetch(
-    `https://v2-brasil-node.cloud.democrachain.org/_block/${scope}`
+    `${endpoint}/_block/${scope}`
   );
   votacionBloque = await votacionBloque.json();
 
@@ -250,14 +250,14 @@ for (var i = 0; i < boxes.length; i++) {
       var bloque = await generateBlock(user, votacionActual.hash, voto);
 
       let bloqueResultante = await fetch(
-        `https://v2-brasil-node.cloud.democrachain.org/_block/${bloque.hash}`
+        `${endpoint}/_block/${bloque.hash}`
       );
       bloqueResultante = await bloqueResultante.json();
       console.log("bloqueResultante1", bloqueResultante);
       if (bloqueResultante.error) {
         console.log("Try with failed?");
         bloqueResultante = await fetch(
-          `https://v2-brasil-node.cloud.democrachain.org/_failed/${bloque.hash}`
+          `${endpoint}/_failed/${bloque.hash}`
         );
         bloqueResultante = await bloqueResultante.json();
         console.log("bloqueResultante2", bloqueResultante);
