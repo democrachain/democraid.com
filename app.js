@@ -196,9 +196,7 @@ async function generateBlock(user, scope, data) {
     timestamp: new Date().getTime(),
     scope: "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb",
     by: "democraid/" + user.democraid,
-    signature: "",
-    rootPrevHash: "",
-    rootHeight: "",
+    signature: ""
   };
 
   let sigHash = await getSignatureAndHash(user.keys, block);
