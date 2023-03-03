@@ -318,7 +318,7 @@ function setValuesToUI(user) {
 async function handleCredentialResponse(response) {
   console.log("Encoded JWT ID token: ", response.credential);
   let googleUser = await fetch(
-    `https://auth.cloud.democraid.com/login/google?token=${response.credential}`,
+    `https://q6qupnjuu3.execute-api.sa-east-1.amazonaws.com/login/google?token=${response.credential}`,
     {
       credentials: "include",
     }
@@ -335,14 +335,6 @@ async function handleCredentialResponse(response) {
 
 window.onload = async function () {
   console.log("LOAD!");
-  // let userResponse = await fetch(`https://auth.cloud.democraid.com/user.json`, {
-  //   credentials: "include",
-  // });
-  // user = await userResponse.json();
-
-  // console.log("USER", user);
-
-  // main();
 
   if (!user.email) {
     showAll("loginUI");
