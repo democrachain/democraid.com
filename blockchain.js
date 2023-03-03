@@ -212,6 +212,7 @@ async function getSignatureAndHash(params, block) {
     data: block.data,
     timestamp: block.timestamp,
     scope: block.scope,
+    by: block.by,
   };
 
   if (params.priv) {
