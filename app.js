@@ -204,7 +204,8 @@ async function generateBlock(user, scope, data) {
 
   block.hash = sigHash.correctHash;
 
-  console.log("block", block);
+  console.log("block:");
+  console.log(JSON.stringify(block, null, 2));
 
   let createResult = await fetch(`${endpoint}/newBlock`, {
     method: "POST",
