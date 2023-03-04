@@ -192,9 +192,9 @@ async function generateBlock(user, scope, data) {
     prevHash: scopeHead.head,
     height: scopeHead.height + 1,
     version: 2,
-    data: `// IMPORT d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb\n\n{voto: "${data}"}`,
+    data: `// IMPORT dd76080e3bb4cd91b936b6fb74d005fa3a48bd286a1d5c9524fc7193165c9ac3\n\n{voto: "${data}"}`,
     timestamp: new Date().getTime(),
-    scope: "d1d259e374174c56fb167819680256e4fdba2c8c67c236bd7853135037401fdb",
+    scope: "dd76080e3bb4cd91b936b6fb74d005fa3a48bd286a1d5c9524fc7193165c9ac3",
     by: "democraid/" + user.democraid,
     signature: ""
   };
