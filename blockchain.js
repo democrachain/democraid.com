@@ -247,8 +247,8 @@ async function getSignatureAndHash(params, block) {
     data: block.data,
     timestamp: block.timestamp,
     scope: block.scope,
-    signature: block.signature,
     by: block.by,
+    signature: block.signature,
   };
 
   // let originalBlock = Object.assign({}, block)
