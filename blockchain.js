@@ -249,8 +249,6 @@ async function getSignatureAndHash(params, block) {
     scope: block.scope,
     signature: block.signature,
     by: block.by,
-    rootPrevHash: block.rootPrevHash,
-    rootHeight: block.rootHeight,
   };
 
   // let originalBlock = Object.assign({}, block)
