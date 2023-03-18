@@ -77,7 +77,7 @@ function setValuesToParticipaciones() {
   document.getElementById("voteQuestion").innerText = headers.question;
   document.getElementById("option_1_participacion").innerText = headers["option_1"] + ": " + results[0];
   document.getElementById("option_2_participacion").innerText = headers["option_2"] + ": " + results[1]
-  document.getElementById("participationHash").innerText = headers.block.hash;
+  document.getElementById("participationHash").innerHTML = `<a href="https://demv2-brasil-node.cloud.democrachain.org/v2/visor/index.html?scope=${headers.block.hash}">${headers.block.hash}</a>`;
 }
 
 async function getVoteMetadata() {
