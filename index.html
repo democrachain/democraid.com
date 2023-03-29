@@ -103,12 +103,14 @@
     <div class="container loginUI d-none" style="margin-top: 40px">
       <div class="row">
         <div class="col">
-          <h1 class="bienvenido">Democra<span style="color: #c5c5c5;">ID</span></h1>
+          <h1 class="bienvenido">
+            Democra<span style="color: #c5c5c5">ID</span>
+          </h1>
           <h2 class="bienvenido" style="margin-bottom: 20px">
             Simple way to access your digital identity, in just a few minutes.
           </h2>
-          <div id="googleLoginButton"></div>
-          <div class="text-center fixed-bottom" style="padding-bottom: 30px;">
+          <!-- <div id="googleLoginButton"></div> -->
+          <div class="text-center fixed-bottom" style="padding-bottom: 30px">
             <span class="m-3"
               >Powered by
               <a
@@ -117,6 +119,19 @@
                 >democrachain.org</a
               ></span
             >
+          </div>
+          <div class="row">
+            <div class="col">All you need is an email address:</div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <input id="email" placeholder="example@email.com" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div id="loginButton" class="pointy">Enter</div>
+            </div>
           </div>
         </div>
       </div>
@@ -130,7 +145,7 @@
       </div>
       <div class="row text-center">
         <div class="col">
-          <h1 id="given_name" class=""></h1>
+          <h1 id="top_message" class=""></h1>
           <div>
             ID:
             <b id="user_id" class=""></b>
@@ -141,9 +156,7 @@
 
     <div class="container overflow-hidden p-4 pagLoading">
       <div class="row">
-        <div class="col-12 text-center align-middle" >
-          Cargando...
-        </div>
+        <div id="loading" class="col-12 text-center align-middle">Cargando...</div>
       </div>
     </div>
 
@@ -153,7 +166,7 @@
         <div class="col-12">
           <div id="participaciones" class="p-3 roundedBox button">
             <img class="py-2" width="50" src="img/layers.png" />
-            <h4>Ver participaciones</h4>
+            <h4>Resultados</h4>
             <span>Verifica el estado de tus participaciones</span>
           </div>
         </div>
@@ -171,7 +184,7 @@
           </div>
         </div>
         <div class="col-6">
-          <div class="p-3 roundedBox" style="height: 100%">
+          <div id="datos" class="p-3 roundedBox button" style="height: 100%">
             <img class="py-2" width="50" src="img/documents.png" />
             <h6>Datos personales</h6>
           </div>
@@ -179,10 +192,35 @@
       </div>
       <div class="row">
         <div class="col-12">
-          <div onclick="document.location = '?logout=true'" class="p-3 roundedBox text-center pointy" style="height: 100%">
+          <div
+            id="closeSession"
+            class="p-3 roundedBox text-center pointy button"
+            style="height: 100%"
+          >
             <h5>Cerrar sesión</h5>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="container p-1 d-none pagDatos" style="margin-top: 40px">
+      <div class="row text-center">
+        <div id="actualizarUI" class="col d-none">
+          <h3>Actualizar registro</h3>
+          <h5 id="datosForm"></h5>
+          <div id="guardarDatos" class="p-3 roundedBox button">Actualizar</div>
+        </div>
+        <div id="buscarUI" class="col">
+          <h3>Buscar datos actuales</h3>
+          <div id="cedulaDorm">
+            <div>Introduzca su cédula</div>
+            <input id="searchCedula" value="17896523" />
+          </div>
+          <div id="buscarCedula" class="p-3 roundedBox button">Siguiente</div>
+        </div>
+      </div>
+      <div id="back" class="m-3 roundedBox button text-center">
+        <div id="backButton" class="backButton p-3">REGRESAR</div>
       </div>
     </div>
 
@@ -239,7 +277,7 @@
             <h4 id="votarButtonText" class="p-3">VOTAR</h4>
           </div>
           <div id="back" class="m-3 roundedBox button text-center">
-            <h4 id="backButton" class="backButton p-3">REGRESAR</h4>
+            <div id="backButton" class="backButton p-3">REGRESAR</div>
           </div>
         </div>
       </div>
@@ -249,7 +287,7 @@
       <div class="row">
         <div class="col-12">
           <div class="p-3 roundedBox grayBox">
-            <h5>Resultados votación</h5>
+            <h5>Resultados votación (ejemplo)</h5>
             <h4 id="voteQuestionParticipaciones">
               ¿Consideras que se debe poner un portón eléctrico en la comunidad?
             </h4>
@@ -287,7 +325,7 @@
             </div> -->
           </div>
           <div id="back" class="m-3 roundedBox button text-center">
-            <h4 id="backButton" class="backButton p-3">REGRESAR</h4>
+            <div id="backButton" class="backButton p-3">REGRESAR</div>
           </div>
         </div>
       </div>
@@ -312,5 +350,11 @@
     </div> -->
     <script src="./blockchain.js" type="text/javascript"></script>
     <script src="/app.js"></script>
+    <script>
+      document.getElementById("loginButton").onclick = () => {
+        let email = document.getElementById("email");
+        document.location = `http://127.0.0.1:5300/?email=${email.value}`;
+      };
+    </script>
   </body>
 </html>

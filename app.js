@@ -1,24 +1,72 @@
 navigator.serviceWorker.register("/worker.js");
-var user = {}
-var results = []
+var user = {};
+var registry = {};
+var results = [];
+let registryData = {};
+
 console.log(document.location.search);
-if (document.location.search === "?logout=true") {
-  console.log("clean session");
-  localStorage.removeItem("user");
-  document.location = "/"
-} else {
-  if (window.location.origin === "https://democraid.com") {
-    var savedUser = localStorage.getItem("user");
-    user = savedUser ? JSON.parse(savedUser) : {};
-  }
-}
 
 var vote;
 let scope;
 let headers = {};
 let endpoint = "https://demv2-brasil-node.cloud.democrachain.org/v2";
 let votacionActual;
-let votacionBloque
+let votacionBloque;
+
+let datosPersonales = {
+  cedula: {
+    type: "text",
+    label: "Cedula de Identidad",
+    label: "Cedula de Identidad",
+    attribs: {
+      disabled: true,
+    },
+  },
+  nombre: {
+    type: "text",
+    label: "Nombres y Apellidos",
+    attribs: {
+      disabled: true,
+    },
+  },
+  telefono: {
+    type: "text",
+    label: "Teléfono de contacto",
+  },
+  nota: {
+    type: "text",
+    label: "Nota / Comentario",
+  },
+  estado: {
+    type: "list",
+    label: "Estado / Región",
+    exLabel: "Estado / Región",
+    params: () => `_edo=yes`,
+    onChange: (evt) => {
+      console.log("Estado change", evt);
+    },
+  },
+  municipio: {
+    type: "list",
+    label: "Ciudad",
+    exLabel: "País",
+    params: (s) => `edo=${s.estado}&_mun=yes`,
+  },
+  parroquia: {
+    type: "list",
+    label: "Parroquia",
+    exLabel: "Ciudad",
+    params: (s) => `mun=${s.municipio}&_par=yes`,
+  },
+};
+
+// cedula: "V-18979787";
+// centro: "ESCUELA BASICA ESTADAL GUSTAVO FUENMAYOR";
+// direccion: "SECTOR AVENIDA PRINCIPAL  LA ROSA VIEJA FRENTE AVENIDA PRINCIPAL. DERECHA CALLE EL PORVENIR. IZQUIERDA CALLE GUSTAVO FUENMAYOR AVENIDA PRINCIPAL ROSA VIEJA CABIMAS AL LADO DE LA IGLESIA SAN JUAN BAUTISTA CASA";
+// estado: "EDO. ZULIA";
+// municipio: "MP. CABIMAS";
+// nombre: "GLEXIS CAROLINA CAMACHO OROPEZA";
+// parroquia: "PQ. LA ROSA";
 
 // var user = {
 //   iss: "https://accounts.google.com",
@@ -75,35 +123,33 @@ function setValuesToParticipaciones() {
   document.getElementById("voteComunity").innerText = headers.comunity;
   document.getElementById("voteType").innerText = headers.type;
   document.getElementById("voteQuestion").innerText = headers.question;
-  document.getElementById("option_1_participacion").innerText = headers["option_1"] + ": " + results[0];
-  document.getElementById("option_2_participacion").innerText = headers["option_2"] + ": " + results[1]
-  document.getElementById("participationHash").innerHTML = `<a href="https://demv2-brasil-node.cloud.democrachain.org/v2/visor/index.html?scope=${headers.block.hash}">${headers.block.hash}</a>`;
+  document.getElementById("option_1_participacion").innerText =
+    headers["option_1"] + ": " + results[0];
+  document.getElementById("option_2_participacion").innerText =
+    headers["option_2"] + ": " + results[1];
+  document.getElementById(
+    "participationHash"
+  ).innerHTML = `<a href="https://demv2-brasil-node.cloud.democrachain.org/v2/visor/index.html?scope=${headers.block.hash}">${headers.block.hash}</a>`;
 }
 
 async function getVoteMetadata() {
-  votacionActual = await fetch(
-    `${endpoint}/democraid/_/votacionActual`
-  );
+  votacionActual = await fetch(`${endpoint}/democraid/_/votacionActual`);
   votacionActual = await votacionActual.json();
   console.log("votacionActual", votacionActual);
 
-  votacionBloque = await fetch(
-    `${endpoint}/_block/${votacionActual.hash}`
-  );
+  votacionBloque = await fetch(`${endpoint}/_block/${votacionActual.hash}`);
   votacionBloque = await votacionBloque.json();
   console.log("votacionBloque", votacionBloque);
 
-  var resultsFetches = []
-  resultsFetches.push(fetch(
-    `${endpoint}/${votacionActual.hash}/_/votos/si`
-  ))
-  resultsFetches.push(fetch(
-    `${endpoint}/${votacionActual.hash}/_/votos/no`
-  ))
+  var resultsFetches = [];
+  resultsFetches.push(fetch(`${endpoint}/${votacionActual.hash}/_/votos/si`));
+  resultsFetches.push(fetch(`${endpoint}/${votacionActual.hash}/_/votos/no`));
 
-  results = await Promise.all((await Promise.all(resultsFetches)).map(async (res) => await res.text()))
+  results = await Promise.all(
+    (await Promise.all(resultsFetches)).map(async (res) => await res.text())
+  );
 
-  console.log("results", results)
+  console.log("results", results);
 
   let lines = votacionBloque.data.split("\n");
   let line = lines.shift();
@@ -112,13 +158,12 @@ async function getVoteMetadata() {
     headers[line.split(": ")[0].toLowerCase().replace("// ", "")] =
       line.split(": ")[1];
   }
-  headers.block = votacionBloque
+  headers.block = votacionBloque;
 }
 
-
 async function showParticipaciones() {
-  showLoading()
-  await getVoteMetadata()
+  showLoading();
+  await getVoteMetadata();
 
   console.log("headers", headers);
   console.log("votacionBloque", votacionBloque);
@@ -128,8 +173,8 @@ async function showParticipaciones() {
 }
 
 async function cargarVotaciones() {
-  showLoading()
-  await getVoteMetadata()
+  showLoading();
+  await getVoteMetadata();
 
   console.log("headers", headers);
   console.log("votacionBloque", votacionBloque);
@@ -138,37 +183,192 @@ async function cargarVotaciones() {
   showAll("pagVoto");
 }
 
+async function fetchList(listEl, currentData) {
+  let list = await fetch(authServer + "/centro?" + listEl.params(currentData), {
+    credentials: "include",
+  });
+
+  return await list.json();
+}
+
 function showLoading() {
   hideAll("pagVoto");
   hideAll("pagMain");
+  hideAll("pagDatos");
   showAll("pagLoading");
 }
 
+function changeHandler(evt) {
+  console.log("changeHandler", evt.target);
+  let attrib = evt.target.id.replace("input", "");
+  registryData[attrib] = evt.target.value;
+
+  if (attrib === "estado") {
+    registryData.municipio = "";
+    document.getElementById("piecemunicipio").remove();
+    registryData.parroquia = "";
+    document.getElementById("pieceparroquia").remove();
+  }
+
+  if (attrib === "municipio") {
+    registryData.parroquia = "";
+    document.getElementById("pieceparroquia").remove();
+  }
+
+  showDatos();
+}
+
+async function showDatos() {
+  hideAll("pagVoto");
+  hideAll("pagMain");
+  hideAll("pagLoading");
+  console.log("registryData", registryData);
+  showAll("pagDatos");
+
+  if (registryData.cedula) {
+    document.getElementById("buscarUI").classList.add("d-none");
+    document.getElementById("actualizarUI").classList.remove("d-none");
+
+    let datosForm = document.getElementById("datosForm");
+    // datosForm.replaceChildren();
+    // for (let piece in datosPersonales) {
+    for (let piece in datosPersonales) {
+      let existingPiece = document.getElementById("piece" + piece);
+      if (!existingPiece) {
+        let pieceDiv = document.createElement("div");
+        pieceDiv.id = "piece" + piece;
+        let labelDiv = document.createElement("div");
+        pieceDiv.appendChild(labelDiv);
+
+        if (datosPersonales[piece].type === "text") {
+          let inputDiv = document.createElement("input");
+          inputDiv.id = "input" + piece;
+          if (datosPersonales[piece].defaultValue) {
+            inputDiv.value = datosPersonales[piece].defaultValue;
+          }
+          if (registryData[piece]) {
+            inputDiv.value = registryData[piece];
+          }
+          if (datosPersonales[piece].attribs) {
+            Object.keys(datosPersonales[piece].attribs).forEach((key) => {
+              inputDiv[key] = datosPersonales[piece].attribs[key];
+            });
+          }
+          labelDiv.innerText = datosPersonales[piece].label;
+
+          pieceDiv.appendChild(inputDiv);
+        }
+
+        if (datosPersonales[piece].type === "list") {
+          let listFromServer = await fetchList(
+            datosPersonales[piece],
+            registryData
+          );
+          listFromServer = listFromServer
+            .filter((e) => e.length > 1)
+            .sort((a, b) => (a > b ? 1 : -1))
+            .map((e) => e.toUpperCase());
+
+          console.log("listFromServer", listFromServer.length, listFromServer);
+
+          if (listFromServer.length > 0) {
+            let inputEl = document.createElement("select");
+            inputEl.id = "input" + piece;
+
+            if (registryData[piece] === "") {
+              registryData[piece] = listFromServer[0];
+            }
+
+            for (var val of listFromServer) {
+              let inputOption = document.createElement("option");
+              inputOption.value = val;
+              inputOption.innerText = val;
+              if (registryData[piece] === val) {
+                inputOption.selected = "true";
+              }
+              inputEl.appendChild(inputOption);
+            }
+
+            inputEl.onchange = changeHandler;
+            labelDiv.innerText =
+              registryData.estado === "EXTERIOR"
+                ? datosPersonales[piece].exLabel
+                : datosPersonales[piece].label;
+            pieceDiv.appendChild(inputEl);
+          }
+        }
+
+        datosForm.appendChild(pieceDiv);
+      }
+    }
+  }
+}
+
+var buttonHandler = async function (id, evt) {
+  console.log("click id", id);
+  if (id === "votar") {
+    cargarVotaciones();
+    return;
+  }
+  if (id === "participaciones") {
+    showParticipaciones();
+    return;
+  }
+  if (id === "participaciones") {
+    showParticipaciones();
+    return;
+  }
+
+  if (id === "closeSession") {
+    evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+    location.href = authServer + `/logout`;
+  }
+
+  if (id === "datos") {
+    showDatos();
+    return;
+  }
+  if (id === "buscarCedula") {
+    let cedulaResponse = await fetch(
+      authServer +
+        `/registro?cedula=${document.getElementById("searchCedula").value}`,
+      {
+        credentials: "include",
+      }
+    );
+    registryData = await cedulaResponse.json();
+    console.log("registryData", registryData);
+    showDatos();
+  }
+  if (id === "guardarDatos") {
+    let datosPayload = {};
+    for (let piece in datosPersonales) {
+      datosPayload[piece] = document.getElementById("input" + piece).value;
+    }
+    console.log("UPDATE: datosPayload", datosPayload);
+    await fetch(authServer + `/storage`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ registro: datosPayload }, null, 2),
+    });
+  }
+  if (id === "back") {
+    hideAll("pagVoto");
+    hideAll("pagDatos");
+    hideAll("pagParticipaciones");
+    showAll("pagMain");
+    // history.back();
+  }
+};
 
 var boxes = document.getElementsByClassName("button");
 for (var i = 0; i < boxes.length; i++) {
   console.log(boxes[i]);
-  boxes[i].onclick = function (id, evt) {
-    console.log("click id", id);
-    if (id === "votar") {
-      cargarVotaciones();
-      return 
-    }
-    if (id === "participaciones") {
-      showParticipaciones();
-      return 
-    }
-    if (id === "back") {
-      hideAll("pagVoto");
-      hideAll("pagParticipaciones");
-      showAll("pagMain");
-      // history.back();
-    }
-
-  }.bind(null, boxes[i].id);
+  boxes[i].onclick = buttonHandler.bind(null, boxes[i].id);
 }
 
 async function generateBlock(user, scope, data) {
+  console.log("generateBlock", user.keys);
   let privKey = await getPrivKey(user.keys);
   console.log("privKey", privKey);
   user.keys.endpoint = endpoint;
@@ -183,9 +383,7 @@ async function generateBlock(user, scope, data) {
     };
   }
 
-  let votacionBloque = await fetch(
-    `${endpoint}/_block/${scope}`
-  );
+  let votacionBloque = await fetch(`${endpoint}/_block/${scope}`);
   votacionBloque = await votacionBloque.json();
 
   let block = {
@@ -196,7 +394,7 @@ async function generateBlock(user, scope, data) {
     timestamp: new Date().getTime(),
     scope: "aa99495c112ee6dc549b39df18185fd7043e7dc752f5a53bf4f4c6354786b568",
     by: "democraid/" + user.democraid,
-    signature: ""
+    signature: "",
   };
 
   let sigHash = await getSignatureAndHash(user.keys, block);
@@ -248,16 +446,12 @@ for (var i = 0; i < boxes.length; i++) {
 
       var bloque = await generateBlock(user, votacionActual.hash, voto);
 
-      let bloqueResultante = await fetch(
-        `${endpoint}/_block/${bloque.hash}`
-      );
+      let bloqueResultante = await fetch(`${endpoint}/_block/${bloque.hash}`);
       bloqueResultante = await bloqueResultante.json();
       console.log("bloqueResultante1", bloqueResultante);
       if (bloqueResultante.error) {
         console.log("Try with failed?");
-        bloqueResultante = await fetch(
-          `${endpoint}/_failed/${bloque.hash}`
-        );
+        bloqueResultante = await fetch(`${endpoint}/_failed/${bloque.hash}`);
         bloqueResultante = await bloqueResultante.json();
         console.log("bloqueResultante2", bloqueResultante);
       }
@@ -301,12 +495,13 @@ function showAll(className, addMe = "d-none") {
 console.log("INITED");
 
 function setValuesToUI(user) {
-  
-  document.getElementById("userPicture").src = user.picture;
-  document.getElementById("given_name").innerText = user.given_name;
+  if (user.picture) {
+    document.getElementById("userPicture").src = user.picture;
+  }
+  document.getElementById("top_message").innerText = "Bienvenido";
   document.getElementById("user_id").innerText = user.democraid;
   // document.getElementById("family_name").innerText = user.family_name;
-  document.getElementById("googleLoginButton").style = "display: none;";
+  // document.getElementById("googleLoginButton").style = "display: none;";
   // document.getElementById("userPicture").style = "display: block;";
 
   hideAll("pagLoading");
@@ -332,46 +527,95 @@ async function handleCredentialResponse(response) {
   }
 }
 
+let authServer = "http://127.0.0.1:5300";
 window.onload = async function () {
   console.log("LOAD!");
 
-  if (!user.email) {
-    showAll("loginUI");
-    google.accounts.id.initialize({
-      client_id:
-        "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
-      callback: handleCredentialResponse,
+  if (document.location.search === "?logout=true") {
+    console.log("clean session");
+    localStorage.removeItem("user");
+    document.location = "/";
+    await fetch(authServer + `/logout`);
+  } else {
+    if (window.location.origin === "https://democraid.com") {
+      var savedUser = localStorage.getItem("user");
+      user = savedUser ? JSON.parse(savedUser) : {};
+    }
+  }
+
+  try {
+    user = await fetch(authServer + `/session.json`, {
+      credentials: "include",
     });
 
-    google.accounts.id.renderButton(
-      document.getElementById("googleLoginButton"),
-      { theme: "outline" }
-    );
+    user = await user.json();
+    console.log("USER", user);
 
-    // setTimeout(() => {
-    //   console.log("prompt!");
-    //   google.accounts.id.prompt((notification) => {
-    //     console.log(
-    //       "notification.isNotDisplayed()",
-    //       notification.isNotDisplayed()
-    //     );
-    //     console.log(
-    //       "notification.isSkippedMoment()",
-    //       notification.isSkippedMoment()
-    //     );
-    //     if (
-    //       notification.isNotDisplayed() ||
-    //       notification.isSkippedMoment()
-    //     ) {
-    //       google.accounts.id.renderButton(
-    //         document.getElementById("googleLoginButton"),
-    //         { theme: "outline" }
-    //       );
-    //     }
-    //   }); // also display the One Tap dialog
-    // }, 1000);
-  } else {
-    setValuesToUI(user);
-    // showParticipaciones(user);
+    if (user.email) {
+      setValuesToUI(user);
+    } else {
+      showAll("loginUI");
+    }
+
+    registry = await fetch(authServer + `/registry.json`, {
+      credentials: "include",
+    });
+    registry = await registry.json();
+    console.log("registry2", registry);
+    registryData = registry.registro;
+    if (registry.registro) {
+      document.getElementById("top_message").innerText =
+        registry.registro.cedula;
+    }
+  } catch (err) {
+    console.log("err23231", err, err.stack);
+    document.getElementById("loading").innerHTML = "Error...";
+    // if (!user.email) {
+    //   showAll("loginUI");
+    //   google.accounts.id.initialize({
+    //     client_id:
+    //       "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
+    //     callback: handleCredentialResponse,
+    //   });
+
+    //   google.accounts.id.renderButton(
+    //     document.getElementById("googleLoginButton"),
+    //     { theme: "outline" }
+    //   );
+
+    //   // setTimeout(() => {
+    //   //   console.log("prompt!");
+    //   //   google.accounts.id.prompt((notification) => {
+    //   //     console.log(
+    //   //       "notification.isNotDisplayed()",
+    //   //       notification.isNotDisplayed()
+    //   //     );
+    //   //     console.log(
+    //   //       "notification.isSkippedMoment()",
+    //   //       notification.isSkippedMoment()
+    //   //     );
+    //   //     if (
+    //   //       notification.isNotDisplayed() ||
+    //   //       notification.isSkippedMoment()
+    //   //     ) {
+    //   //       google.accounts.id.renderButton(
+    //   //         document.getElementById("googleLoginButton"),
+    //   //         { theme: "outline" }
+    //   //       );
+    //   //     }
+    //   //   }); // also display the One Tap dialog
+    //   // }, 1000);
+    // } else {
+    //   console.log("USER email", user.email)
+    //   if(user.email) {
+    //     setValuesToUI(user);
+    //   } else {
+    //     document.getElementById("loading").innerHTML = "Error..."
+    //   }
+    //   // showParticipaciones(user);
+    // }
   }
+
+  // buttonHandler("datos");
+  // setTimeout(buttonHandler("buscarCedula"), 2000);
 };
