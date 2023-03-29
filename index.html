@@ -100,7 +100,7 @@
   </head>
   <style></style>
   <body>
-    <div class="container loginUI d-none" style="margin-top: 40px">
+    <div class="container pagLogin d-none" style="margin-top: 40px">
       <div class="row">
         <div class="col">
           <h1 class="bienvenido">
@@ -130,9 +130,17 @@
           </div>
           <div class="row">
             <div class="col">
-              <div id="loginButton" class="pointy">Enter</div>
+              <div id="loginButton" class="pointy button">Enter</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container overflow-hidden p-4 pagLoading">
+      <div class="row">
+        <div id="loading" class="col-12 text-center align-middle">
+          Cargando...
         </div>
       </div>
     </div>
@@ -154,13 +162,6 @@
       </div>
     </div>
 
-    <div class="container overflow-hidden p-4 pagLoading">
-      <div class="row">
-        <div id="loading" class="col-12 text-center align-middle">Cargando...</div>
-      </div>
-    </div>
-
-    <!-- Welcome -->
     <div class="container overflow-hidden p-4 pagMain d-none">
       <div class="row">
         <div class="col-12">
@@ -175,7 +176,7 @@
         <div class="col-6">
           <div
             id="votar"
-            class="p-3 roundedBox button yellowBox"
+            class="p-3 roundedBox button disabledBox"
             style="height: 100%"
           >
             <img class="py-2" width="50" src="img/download.png" />
@@ -184,7 +185,7 @@
           </div>
         </div>
         <div class="col-6">
-          <div id="datos" class="p-3 roundedBox button" style="height: 100%">
+          <div id="datos" class="p-3 roundedBox button disabledBox" style="height: 100%">
             <img class="py-2" width="50" src="img/documents.png" />
             <h6>Datos personales</h6>
           </div>
@@ -205,22 +206,22 @@
 
     <div class="container p-1 d-none pagDatos" style="margin-top: 40px">
       <div class="row text-center">
+        <div id="buscarUI" class="p-4 col-12">
+          <h3>Buscar datos actuales</h3>
+          <div>Introduzca su cédula</div>
+          <input id="searchCedula" value="17896524" />
+          <div id="buscarCedula" class="p-3 m-4 roundedBox button">Siguiente</div>
+        </div>
         <div id="actualizarUI" class="col d-none">
           <h3>Actualizar registro</h3>
           <h5 id="datosForm"></h5>
           <div id="guardarDatos" class="p-3 roundedBox button">Actualizar</div>
         </div>
-        <div id="buscarUI" class="col">
-          <h3>Buscar datos actuales</h3>
-          <div id="cedulaDorm">
-            <div>Introduzca su cédula</div>
-            <input id="searchCedula" value="17896523" />
-          </div>
-          <div id="buscarCedula" class="p-3 roundedBox button">Siguiente</div>
-        </div>
       </div>
-      <div id="back" class="m-3 roundedBox button text-center">
-        <div id="backButton" class="backButton p-3">REGRESAR</div>
+      <div class="row text-center">
+        <div class="col-12">
+          <div id="backReload" class="p-3 m-4 roundedBox button">Regresar</div>
+        </div>
       </div>
     </div>
 
@@ -232,6 +233,7 @@
         </div>
       </div>
     </div>
+
     <div class="container overflow-hidden p-4 d-none pagVoto">
       <div class="row">
         <div class="col-12">
@@ -277,7 +279,7 @@
             <h4 id="votarButtonText" class="p-3">VOTAR</h4>
           </div>
           <div id="back" class="m-3 roundedBox button text-center">
-            <div id="backButton" class="backButton p-3">REGRESAR</div>
+            <div id="backButton" class="backButton p-3">Regresar</div>
           </div>
         </div>
       </div>
@@ -315,46 +317,15 @@
             </div>
             Auditoría:
             <span id="participationHash"></span>
-            <!-- <div class="row">
-              <div class="col">
-                <span
-                  >La votación cierra el
-                  <b>31 de Enero del 2023 a las 10:00pm</b></span
-                >
-              </div>
-            </div> -->
           </div>
           <div id="back" class="m-3 roundedBox button text-center">
-            <div id="backButton" class="backButton p-3">REGRESAR</div>
+            <div id="backButton" class="backButton p-3">Regresar</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 
-    <div class="container text-center">
-      <div class="row">
-        <div class="col">
-          <span>🟢</span>
-          <span>Todas tus participaciones han sido procesadas.</span>
-        </div>
-      </div>
-    </div> -->
-
-    <!-- <div class="container fixed-bottom text-center">
-      <div class="row">
-        <div class="col-12">
-          <h5>Vene<b>Avatar</b></h5>
-        </div>
-      </div>
-    </div> -->
     <script src="./blockchain.js" type="text/javascript"></script>
     <script src="/app.js"></script>
-    <script>
-      document.getElementById("loginButton").onclick = () => {
-        let email = document.getElementById("email");
-        document.location = `http://127.0.0.1:5300/?email=${email.value}`;
-      };
-    </script>
   </body>
 </html>

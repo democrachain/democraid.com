@@ -39,8 +39,8 @@ let datosPersonales = {
   },
   estado: {
     type: "list",
-    label: "Estado / Región",
-    exLabel: "Estado / Región",
+    label: "Estado",
+    exLabel: "Región",
     params: () => `_edo=yes`,
     onChange: (evt) => {
       console.log("Estado change", evt);
@@ -48,7 +48,7 @@ let datosPersonales = {
   },
   municipio: {
     type: "list",
-    label: "Ciudad",
+    label: "Municipio",
     exLabel: "País",
     params: (s) => `edo=${s.estado}&_mun=yes`,
   },
@@ -199,6 +199,7 @@ function showLoading() {
 }
 
 function changeHandler(evt) {
+  document.getElementById("guardarDatos").classList.add("yellowBox");
   console.log("changeHandler", evt.target);
   let attrib = evt.target.id.replace("input", "");
   registryData[attrib] = evt.target.value;
@@ -304,60 +305,93 @@ async function showDatos() {
   }
 }
 
+var busy = false;
 var buttonHandler = async function (id, evt) {
-  console.log("click id", id);
-  if (id === "votar") {
-    cargarVotaciones();
-    return;
-  }
-  if (id === "participaciones") {
-    showParticipaciones();
-    return;
-  }
-  if (id === "participaciones") {
-    showParticipaciones();
-    return;
-  }
-
-  if (id === "closeSession") {
-    evt.target.innerHTML = "<img src='/img/spinner.gif'>";
-    location.href = authServer + `/logout`;
-  }
-
-  if (id === "datos") {
-    showDatos();
-    return;
-  }
-  if (id === "buscarCedula") {
-    let cedulaResponse = await fetch(
-      authServer +
-        `/registro?cedula=${document.getElementById("searchCedula").value}`,
-      {
-        credentials: "include",
+  if (!busy && !evt.target.classList.contains("disabledBox")) {
+    try {
+      console.log("click id", id);
+      busy = true;
+      if (id === "loginButton") {
+        let email = document.getElementById("email");
+        if (
+          email.value.length > 0 &&
+          email.value.indexOf("@") > 0 &&
+          email.value.indexOf(".") > 0
+        ) {
+          document.location = `http://127.0.0.1:5300/?email=${email.value}`;
+        }
       }
-    );
-    registryData = await cedulaResponse.json();
-    console.log("registryData", registryData);
-    showDatos();
-  }
-  if (id === "guardarDatos") {
-    let datosPayload = {};
-    for (let piece in datosPersonales) {
-      datosPayload[piece] = document.getElementById("input" + piece).value;
+
+      if (id === "votar") {
+        cargarVotaciones();
+      }
+      if (id === "participaciones") {
+        showParticipaciones();
+      }
+      if (id === "participaciones") {
+        showParticipaciones();
+      }
+
+      if (id === "closeSession") {
+        evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+        location.href = authServer + `/logout`;
+      }
+
+      if (id === "datos") {
+        showDatos();
+      }
+      if (id === "buscarCedula") {
+        evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+        setTimeout(() => {
+          evt.target.innerHTML = "Buscar";
+        }, 5000);
+
+        let cedulaResponse = await fetch(
+          authServer +
+            `/registro?cedula=${document.getElementById("searchCedula").value}`,
+          {
+            credentials: "include",
+          }
+        );
+        registryData = await cedulaResponse.json();
+        console.log("registryData", registryData);
+        showDatos();
+      }
+      if (id === "guardarDatos") {
+        let datosPayload = {};
+        evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+        document.getElementById("guardarDatos").classList.remove("yellowBox");
+
+        setTimeout(() => {
+          evt.target.innerHTML = "Actualizar";
+        }, 10000);
+
+        for (let piece in datosPersonales) {
+          datosPayload[piece] = document.getElementById("input" + piece).value;
+        }
+        console.log("UPDATE: datosPayload", datosPayload);
+        await fetch(authServer + `/storage`, {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({ registro: datosPayload }, null, 2),
+        });
+        evt.target.innerHTML = "Actualizado!";
+      }
+      if(id === "backReload") {
+        return location.reload()
+      }
+      if (id === "back") {
+        hideAll("pagVoto");
+        hideAll("pagDatos");
+        hideAll("pagParticipaciones");
+        showAll("pagMain");
+        // history.back();
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      busy = false;
     }
-    console.log("UPDATE: datosPayload", datosPayload);
-    await fetch(authServer + `/storage`, {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify({ registro: datosPayload }, null, 2),
-    });
-  }
-  if (id === "back") {
-    hideAll("pagVoto");
-    hideAll("pagDatos");
-    hideAll("pagParticipaciones");
-    showAll("pagMain");
-    // history.back();
   }
 };
 
@@ -484,6 +518,7 @@ function hideAll(className, removeMe = "d-none") {
 }
 
 function showAll(className, addMe = "d-none") {
+  console.log("showAll", className);
   hideAll("pagLoading");
   var boxes = document.getElementsByClassName(className);
   console.log("showing", boxes);
@@ -505,7 +540,7 @@ function setValuesToUI(user) {
   // document.getElementById("userPicture").style = "display: block;";
 
   hideAll("pagLoading");
-  hideAll("loginUI");
+  hideAll("pagLogin");
   showAll("pagMain");
 }
 
@@ -553,67 +588,29 @@ window.onload = async function () {
 
     if (user.email) {
       setValuesToUI(user);
-    } else {
-      showAll("loginUI");
-    }
 
-    registry = await fetch(authServer + `/registry.json`, {
-      credentials: "include",
-    });
-    registry = await registry.json();
-    console.log("registry2", registry);
-    registryData = registry.registro;
-    if (registry.registro) {
-      document.getElementById("top_message").innerText =
-        registry.registro.cedula;
+      registry = await fetch(authServer + `/registry.json`, {
+        credentials: "include",
+      });
+      registry = await registry.json();
+      console.log("registry2", registry);
+      registryData = registry.registro;
+      document.getElementById("datos").classList.remove("disabledBox");
+
+      if (registry.registro) {
+        document.getElementById("top_message").innerText =
+          registry.registro.cedula;
+        document.getElementById("votar").classList.remove("disabledBox");
+      } else {
+        document.getElementById("top_message").innerText =
+        "Bienvenido";
+      }
+    } else {
+      showAll("pagLogin");
     }
   } catch (err) {
     console.log("err23231", err, err.stack);
     document.getElementById("loading").innerHTML = "Error...";
-    // if (!user.email) {
-    //   showAll("loginUI");
-    //   google.accounts.id.initialize({
-    //     client_id:
-    //       "371666599049-0fopffs7jmh4i791o9u6brtqlattvci5.apps.googleusercontent.com",
-    //     callback: handleCredentialResponse,
-    //   });
-
-    //   google.accounts.id.renderButton(
-    //     document.getElementById("googleLoginButton"),
-    //     { theme: "outline" }
-    //   );
-
-    //   // setTimeout(() => {
-    //   //   console.log("prompt!");
-    //   //   google.accounts.id.prompt((notification) => {
-    //   //     console.log(
-    //   //       "notification.isNotDisplayed()",
-    //   //       notification.isNotDisplayed()
-    //   //     );
-    //   //     console.log(
-    //   //       "notification.isSkippedMoment()",
-    //   //       notification.isSkippedMoment()
-    //   //     );
-    //   //     if (
-    //   //       notification.isNotDisplayed() ||
-    //   //       notification.isSkippedMoment()
-    //   //     ) {
-    //   //       google.accounts.id.renderButton(
-    //   //         document.getElementById("googleLoginButton"),
-    //   //         { theme: "outline" }
-    //   //       );
-    //   //     }
-    //   //   }); // also display the One Tap dialog
-    //   // }, 1000);
-    // } else {
-    //   console.log("USER email", user.email)
-    //   if(user.email) {
-    //     setValuesToUI(user);
-    //   } else {
-    //     document.getElementById("loading").innerHTML = "Error..."
-    //   }
-    //   // showParticipaciones(user);
-    // }
   }
 
   // buttonHandler("datos");

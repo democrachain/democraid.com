@@ -72,3 +72,11 @@ h4 {
 .errorColor {
   background-color: #ff0000;
 }
+
+.disabledBox {
+  background-color: gray;
+}
+
+input {
+  width: 100%;
+}
