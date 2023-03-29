@@ -318,7 +318,7 @@ var buttonHandler = async function (id, evt) {
           email.value.indexOf("@") > 0 &&
           email.value.indexOf(".") > 0
         ) {
-          document.location = `http://127.0.0.1:5300/?email=${email.value}`;
+          document.location = `https://auth3.cloud.democraid.com/?email=${email.value}`;
         }
       }
 
@@ -562,7 +562,7 @@ async function handleCredentialResponse(response) {
   }
 }
 
-let authServer = "http://127.0.0.1:5300";
+let authServer = "https://auth3.cloud.democraid.com";
 window.onload = async function () {
   console.log("LOAD!");
 
