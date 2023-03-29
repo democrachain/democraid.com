@@ -13,6 +13,8 @@ let endpoint = "https://demv2-brasil-node.cloud.democrachain.org/v2";
 let votacionActual;
 let votacionBloque;
 
+let authServer = "https://secure.cloud.democraid.com";
+
 let datosPersonales = {
   cedula: {
     type: "text",
@@ -318,7 +320,7 @@ var buttonHandler = async function (id, evt) {
           email.value.indexOf("@") > 0 &&
           email.value.indexOf(".") > 0
         ) {
-          document.location = `https://auth3.cloud.democraid.com/?email=${email.value}`;
+          document.location = `${authServer}?email=${email.value}`;
         }
       }
 
@@ -562,7 +564,6 @@ async function handleCredentialResponse(response) {
   }
 }
 
-let authServer = "https://auth3.cloud.democraid.com";
 window.onload = async function () {
   console.log("LOAD!");
 
