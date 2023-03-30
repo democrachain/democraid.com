@@ -343,21 +343,25 @@ var buttonHandler = async function (id, evt) {
         showDatos();
       }
       if (id === "buscarCedula") {
-        evt.target.innerHTML = "<img src='/img/spinner.gif'>";
-        setTimeout(() => {
-          evt.target.innerHTML = "Buscar";
-        }, 5000);
+        if (document.getElementById("searchCedula").value.length > 0) {
+          evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+          setTimeout(() => {
+            evt.target.innerHTML = "Buscar";
+          }, 5000);
 
-        let cedulaResponse = await fetch(
-          authServer +
-            `/registro?cedula=${document.getElementById("searchCedula").value}`,
-          {
-            credentials: "include",
-          }
-        );
-        registryData = await cedulaResponse.json();
-        console.log("registryData", registryData);
-        showDatos();
+          let cedulaResponse = await fetch(
+            authServer +
+              `/registro?cedula=${
+                document.getElementById("searchCedula").value
+              }`,
+            {
+              credentials: "include",
+            }
+          );
+          registryData = await cedulaResponse.json();
+          console.log("registryData", registryData);
+          showDatos();
+        }
       }
       if (id === "guardarDatos") {
         let datosPayload = {};
@@ -379,8 +383,8 @@ var buttonHandler = async function (id, evt) {
         });
         evt.target.innerHTML = "Actualizado!";
       }
-      if(id === "backReload") {
-        return location.reload()
+      if (id === "backReload") {
+        return location.reload();
       }
       if (id === "back") {
         hideAll("pagVoto");
@@ -601,8 +605,7 @@ window.onload = async function () {
           registry.registro.cedula;
         document.getElementById("votar").classList.remove("disabledBox");
       } else {
-        document.getElementById("top_message").innerText =
-        "Bienvenido";
+        document.getElementById("top_message").innerText = "Bienvenido";
       }
     } else {
       showAll("pagLogin");
