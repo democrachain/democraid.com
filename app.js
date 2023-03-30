@@ -529,8 +529,6 @@ function showAll(className, addMe = "d-none") {
   }
 }
 
-console.log("INITED");
-
 function setValuesToUI(user) {
   if (user.picture) {
     document.getElementById("userPicture").src = user.picture;
