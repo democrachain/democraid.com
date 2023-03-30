@@ -14,6 +14,9 @@ let votacionActual;
 let votacionBloque;
 
 let authServer = "https://secure.cloud.democraid.com";
+if (document.location.host.indexOf("127.0.0.1") > -1) {
+  authServer = "http://127.0.0.1:5300";
+}
 
 let datosPersonales = {
   cedula: {
@@ -320,6 +323,11 @@ var buttonHandler = async function (id, evt) {
           email.value.indexOf("@") > 0 &&
           email.value.indexOf(".") > 0
         ) {
+          evt.target.innerHTML = "<img src='/img/spinner.gif'>";
+          setTimeout(() => {
+            evt.target.innerHTML = "Entrar";
+          }, 5000);
+
           document.location = `${authServer}?email=${email.value}`;
         }
       }
