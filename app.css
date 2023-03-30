@@ -80,3 +80,7 @@ h4 {
 input {
   width: 100%;
 }
+
+.d-none {
+  display: none;
+}
